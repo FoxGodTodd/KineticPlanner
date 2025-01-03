@@ -184,6 +184,5 @@ def Find_options(postcode,df,total_sites, date_input,df2,filenames):
 
 # Run the Streamlit app
 if __name__ == "__main__":
-    #sitelist = 'NewKineticSitelist.xlsx'
     app()
 
