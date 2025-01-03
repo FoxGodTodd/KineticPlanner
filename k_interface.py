@@ -57,7 +57,7 @@ def app():
     # Step 3: Handle ARN brief (option 1)
     if is_arn_brief and chosen is False:
         # Request the user to upload a CSV
-        uploaded_file = st.file_uploader("Upload your previous brief")
+        uploaded_file = st.file_uploader("Upload your previous brief (as a csv, no excel files allowed)")
         
         if uploaded_file is not None:
             # Read the excel into a DataFrame
