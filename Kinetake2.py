@@ -29,7 +29,8 @@ def select_sites(df,k,selected_sites, selected_ids,shots_dict):
         Mtypes = []
         env_type = key
         envrows = df[df['Environment'] == env_type]
-        #Make case for 'Environment' is nan
+        if env_type == 'nan':
+            envrows = df
         envrowsUnique = envrows.drop_duplicates(subset='Media Format Name')
 
         # Find the required number of sites for this format
@@ -123,7 +124,7 @@ def make_dataframe(df,shots_dict,choices,arniesites):
         merged_df['Coordinates'] = merged_df['latitude'].astype(str)+','+merged_df['longitude'].astype(str)
         selected_Df['Coordinates'] = merged_df['Coordinates'].to_list()
 
-        selected_Df=selected_Df[['Map','Brand','Format','Address','Coordinates','Postcode','File Name','Notes','Site Number','Media Owner','Booking IDs','Media Format Name','Environment']]
+        selected_Df=selected_Df[['Map','Brand','Format','Address','Coordinates','Postcode','File Name','Notes','Site Number','Media Owner','Booking IDs']]
         print(f"Selected sites have been saved to 'SelectedSites.xlsx'.")
     return(selected_Df)
 
