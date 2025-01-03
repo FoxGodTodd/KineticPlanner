@@ -117,7 +117,7 @@ def make_dataframe(df,shots_dict,choices,arniesites):
         selected_Df['Map'] = ''
         selected_Df['Notes'] = ''
         selected_Df['File Name'] = ''
-        frame_df = pd.read_excel('FrameIDLatLon.xlsx')
+        frame_df = pd.read_excel("https://github.com/FoxGodTodd/KineticPlanner/raw/main/FrameIDLatLon.xlsx")
         print(selected_Df.head())
         merged_df = pd.merge(selected_Df, frame_df, how='left', left_on='Postar ID', right_on='routeFrameID')
         merged_df['Coordinates'] = merged_df['latitude'].astype(str)+','+merged_df['longitude'].astype(str)
