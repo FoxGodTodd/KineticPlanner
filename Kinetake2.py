@@ -122,17 +122,9 @@ def make_dataframe(df,shots_dict,choices,arniesites):
         merged_df = pd.merge(selected_Df, frame_df, how='left', left_on='Postar ID', right_on='routeFrameID')
         merged_df['Coordinates'] = merged_df['latitude'].astype(str)+','+merged_df['longitude'].astype(str)
         selected_Df['Coordinates'] = merged_df['Coordinates'].to_list()
-        
-        # Export selected sites to a new Excel file
+
         selected_Df=selected_Df[['Map','Brand','Format','Address','Coordinates','Postcode','File Name','Notes','Site Number','Media Owner','Booking IDs','Media Format Name','Environment']]
-        #selected_Df.to_excel('SelectedSites.xlsx', index=False)
         print(f"Selected sites have been saved to 'SelectedSites.xlsx'.")
     return(selected_Df)
 
-#KineticFinal = pd.read_excel('SelectedSites.xlsx')
-#dfFinal = pd.read_csv()
-#dfFinal = pd.concat([dfFinal,KineticFinal])
-
-#choices = ['SE1 8SR','23/08/2024',10]
-#sitelist = 'NewKineticSitelist.xlsx'
 #main(sitelist,choices)
