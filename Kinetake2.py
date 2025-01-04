@@ -124,7 +124,7 @@ def make_dataframe(df,shots_dict,choices,arniesites):
         merged_df['Coordinates'] = merged_df['latitude'].astype(str)+','+merged_df['longitude'].astype(str)
         selected_Df['Coordinates'] = merged_df['Coordinates'].to_list()
 
-        selected_Df=selected_Df[['Map','Brand','Format','Address','Coordinates','Postcode','File Name','Notes','Site Number','Media Owner','Booking IDs']]
+        selected_Df=selected_Df[['Map','Brand','Format','Address','Coordinates','Postcode','File Name','Notes','Site Number','Media Owner','Panel Code','Booking IDs']]
         print(f"Selected sites have been saved to 'SelectedSites.xlsx'.")
     return(selected_Df)
 
