@@ -171,8 +171,8 @@ def Find_options(postcode,df,total_sites, date_input,df2,filenames):
         	    for i in range(len(df2['Coordinates'])):
                      koords = df2.at[i,'Coordinates']
                      koords = koords.strip('()')
-                     latofframe = float(koords[:koords.find(',')])
-                     framelist = framelocs.index[framelocs['latitude']==latofframe].tolist()
+                     latofframe = float(koords[:koords.find(',')-2])
+                     framelist = framelocs.index[framelocs['latitude'].str.startswith(latofframe)].tolist()
                      arnieslist.add(framelocs.at[framelist[0],'routeFrameID'])
                     
             dataframe = Kinetake2.make_dataframe(df,shots_dict,choices,arnieslist) 
