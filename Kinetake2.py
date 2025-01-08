@@ -29,8 +29,10 @@ def select_sites(df,k,selected_sites, selected_ids,shots_dict):
         Mtypes = []
         env_type = key
         envrows = df[df['Environment'] == env_type]
-        if env_type == 'nan':
+        if env_type is 'nan':
             envrows = df
+        if 'Postar ID' not in envrows.columns:
+            envrows['Postar ID'] = range(len(envrows['Media Format Name'].to_numpy()))
         envrowsUnique = envrows.drop_duplicates(subset='Media Format Name')
 
         # Find the required number of sites for this format
@@ -113,19 +115,27 @@ def make_dataframe(df,shots_dict,choices,arniesites):
     if selected_Df.empty:
         print("No sites could be selected based on the given criteria.")
     else:
+        if 'Panel' not in selected_Df.columns:
+            selected_Df['Panel'] = '1'
         selected_Df.rename(columns={'Campaign':'Brand','Panel Name':'Address','Campaign Code':'Booking IDs', 
                            'Contractor Name':'Media Owner','Panel':'Panel Code', 'Size':'Format'},inplace=True)
         selected_Df['Map'] = ''
         selected_Df['Notes'] = ''
         selected_Df['File Name'] = ''
-        frame_df = pd.read_excel("https://github.com/FoxGodTodd/KineticPlanner/raw/main/FrameIDLatLon.xlsx")
-        print(selected_Df.head())
-        merged_df = pd.merge(selected_Df, frame_df, how='left', left_on='Postar ID', right_on='routeFrameID')
-        merged_df['Coordinates'] = merged_df['latitude'].astype(str)+','+merged_df['longitude'].astype(str)
-        selected_Df['Coordinates'] = merged_df['Coordinates'].to_list()
-
+        selected_Df['Coordinates'] = ''
+        frame_df = pd.read_excel('FrameIDLatLon.xlsx')
+        if 'Postar ID' in selected_Df.columns:
+            merged_df = pd.merge(selected_Df, frame_df, how='left', left_on='Postar ID', right_on='routeFrameID')
+            merged_df['Coordinates'] = merged_df['latitude'].astype(str)+','+merged_df['longitude'].astype(str)
+            selected_Df['Coordinates'] = merged_df['Coordinates'].to_list()
+        elif 'Postcode' in selected_Df.columns:
+            frame_df = frame_df.drop_duplicates(subset='Postcode')
+            merged_df = pd.merge(selected_Df, frame_df, how='left', left_on='Postcode', right_on='postCode')
+            merged_df['Coordinates'] = merged_df['latitude'].astype(str)+','+merged_df['longitude'].astype(str)
+            selected_Df['Coordinates'] = merged_df['Coordinates'].to_list()
+        
+        # Export selected sites to a new Excel file
         selected_Df=selected_Df[['Map','Brand','Format','Address','Coordinates','Postcode','File Name','Notes','Site Number','Media Owner','Panel Code','Booking IDs']]
+        #selected_Df.to_excel('SelectedSites.xlsx', index=False)
         print(f"Selected sites have been saved to 'SelectedSites.xlsx'.")
     return(selected_Df)
-
-#main(sitelist,choices)
