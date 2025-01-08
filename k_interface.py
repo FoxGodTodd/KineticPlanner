@@ -7,7 +7,6 @@ import Kinetake2
 import time
 import random
 import re
-import os
 import numpy as np
 
 # Main Streamlit app
@@ -57,7 +56,7 @@ def app():
     # Step 3: Handle ARN brief (option 1)
     if is_arn_brief and chosen is False:
         # Request the user to upload a CSV
-        uploaded_file = st.file_uploader("Upload your previous brief (as a csv, no excel files allowed)")
+        uploaded_file = st.file_uploader("Upload your previous brief")
         
         if uploaded_file is not None:
             # Read the excel into a DataFrame
@@ -66,22 +65,25 @@ def app():
 		
             # Check if the 'Postcode' column exists
             if 'Postcode' in df2.columns:
+                df2 = df2.dropna(subset='Postcode')
                 # Get the postcode from the last row of the 'Postcode' column
                 postcode = df2['Postcode'].iloc[-1]
                 st.write(f"Based on the location of JCD sites in this brief, the Kinetic sites will be searched in the vicinity of {postcode}")
             else:
-                st.error("File does not contain any site we can use")
+                st.write("File does not contain any post code information we can use")
+                postcode = st.text_input("Enter the search postcode manually:")
 
     # Step 4: Handle Kinetic only brief (option 2)
     else:
         # Ask for the postcode input from the user
         postcode_option = st.radio("How would you like to select a postcode?", ("Enter postcode manually", "Pick for me"))
-
         if postcode_option == "Enter postcode manually":
             postcode = st.text_input("Enter the postcode:")
         else:
             # If "Pick for me" is selected, show the multi-select for campaigns
             dftemp = pd.read_excel(df)
+            if 'Campaign' not in dftemp:
+                dftemp['Campaign'] = str(uploadedFilename).strip('.xlsx')
             CUnique = dftemp['Campaign'].unique()
             Clist = np.concatenate((['Include All Campaigns'],CUnique))
             campaigns = st.multiselect(
@@ -97,6 +99,10 @@ def app():
                 print('All included')
                 filtered_df = dftemp
             
+            input_date = date_input.strftime('%Y-%m-%d')
+            filtered_df['Start'] = pd.to_datetime(filtered_df['Start'])
+            filtered_df['Finish'] = pd.to_datetime(filtered_df['Finish'])
+            filtered_df = filtered_df[(filtered_df['Start'] <= input_date)&(filtered_df['Finish'] >= input_date)]
             filtered_df['Postcode Slice'] = filtered_df['Postcode'].str.split(' ').str[0]
         
             # Count how many times each postcode appears in the selected campaigns
@@ -107,9 +113,12 @@ def app():
             print(top_postcodes)
         
             # Randomly pick one of the top 5 postcodes
-            selected_postcode = top_postcodes.index.tolist()[0]
-            Pindex = filtered_df[filtered_df['Postcode Slice'] == selected_postcode].index.tolist()
-            selected_postcode = filtered_df.at[Pindex[0],'Postcode']
+            if len(top_postcodes) >= 1:
+                selected_postcode = top_postcodes.index.tolist()[0]
+                Pindex = filtered_df[filtered_df['Postcode Slice'] == selected_postcode].index.tolist()
+                selected_postcode = filtered_df.at[Pindex[0],'Postcode']
+            else:
+                selected_postcode = dftemp['Postcode'].tolist()[0]
             st.write(f'Chosen postcode is {selected_postcode}')
             postcode = str(selected_postcode)
 
@@ -120,7 +129,7 @@ def app():
 def Find_options(postcode,df,total_sites, date_input,df2,filenames):
     #formatlist = ['6 Sheet','6 Sheet illuminated', '6 Sheet Scrollers','Digital 6 Sheet', 'Digital 6s',
     #        'Digital 48 sheet','High Definition 48','','NaN','Digital 12 Sheet',None,'nan']
-    input_date = date_input.strftime('%d/%m/%Y')
+    input_date = date_input.strftime('%Y-%m-%d')
     st.write("Now pick the shots to plan for each live campaign in this area")
     arnieslist = set()
     
@@ -130,18 +139,34 @@ def Find_options(postcode,df,total_sites, date_input,df2,filenames):
     df = pd.read_excel(df)
     dforiginal = df.copy()
     
+    if 'Campaign' not in df:
+        df['Campaign'] = str(filenames[0]).strip('.xlsx')
+        
     if 'Campaign Code' not in df.columns:
         df['Campaign Code'] = str(filenames[0])
+        
+    if 'Media Format Name' not in df.columns:
+        if 'Size' in df.columns:
+            df['Media Format Name'] = df['Size']
+        else:
+            df['Media Format Name'] = 'Unknown'
     
-    df['Start'] = pd.to_datetime(df['Start'], format='%d/%m/%Y')
-    df['Finish'] = pd.to_datetime(df['Finish'], format='%d/%m/%Y')
+    df = df.dropna(subset=['Postcode'])
+    df['Start'] = pd.to_datetime(df['Start'])
+    df['Finish'] = pd.to_datetime(df['Finish'])
     df = df[(df['Start'] <= input_date)&(df['Finish'] >= input_date)]
-    df = df[(df['Postcode'].str.startswith(postcode[:postcode.find(' ')]+' ',na=False))]    
+    df = df[(df['Postcode'].str.startswith(postcode[:postcode.find(' ')]+' ',na=False))]  
 
     references = df['Campaign Code'].unique()
     
-    st.write('In this postcode, these are the available campaigns this day:'+str(references))
+    if len(references) < 1:
+        st.write('I could not find any campaigns this day, please choose a different date')
+    else:
+        st.write('In this postcode, these are the available campaigns this day:'+str(references))
     shots_dict = {}
+    
+    if 'Environment' not in df.columns:
+        df['Environment'] = "Roadside"
        
     for k in references:
         dfFiltered = df[df['Campaign Code']==k]
@@ -156,7 +181,7 @@ def Find_options(postcode,df,total_sites, date_input,df2,filenames):
     if st.button('Submit'):	
         st.header("Submission Summary:")
         st.write(f"Postcode: {postcode}")
-        st.write(f"Date: {input_date}")
+        st.write(f"Date: {date_input.strftime('%d/%m/%Y')}")
         st.write(f"Maximum Sites: {total_sites}")
         st.write("Chosen number of shots for each K-number:")
         kandshot = []
@@ -166,14 +191,18 @@ def Find_options(postcode,df,total_sites, date_input,df2,filenames):
         
         with st.spinner('Making brief...'):
             framelocs = pd.read_excel('FrameIDLatLon.xlsx')
-            print(type(df2))
             if(df2 is not None):
-        	    for i in range(len(df2['Coordinates'])):
+                df2 = df2.dropna(subset=['Coordinates'])
+                for i in range(len(df2['Coordinates'])):
                      koords = df2.at[i,'Coordinates']
                      koords = koords.strip('()')
-                     latofframe = float(koords[:koords.find(',')-2])
-                     framelist = framelocs.index[framelocs['latitude'].str.startswith(latofframe)].tolist()
-                     arnieslist.add(framelocs.at[framelist[0],'routeFrameID'])
+                     latofframe = str(koords[:koords.find(',')-2])
+                     print('Lat of Frame: ',latofframe)
+                     if len(list(latofframe)) > 2: 
+                         framelocs = framelocs.dropna(subset=['latitude'])
+                         framelist = framelocs.index[framelocs['latitude'].str.startswith(latofframe,na=False)].tolist()
+                         if len(framelist) > 1:
+                             arnieslist.add(framelocs.at[framelist[0],'routeFrameID'])
                     
             dataframe = Kinetake2.make_dataframe(df,shots_dict,choices,arnieslist) 
             if(df2 is not None):
@@ -186,4 +215,3 @@ def Find_options(postcode,df,total_sites, date_input,df2,filenames):
 # Run the Streamlit app
 if __name__ == "__main__":
     app()
-
