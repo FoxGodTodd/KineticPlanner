@@ -106,15 +106,23 @@ def app():
             filtered_df['Postcode Slice'] = filtered_df['Postcode'].str.split(' ').str[0]
         
             # Count how many times each postcode appears in the selected campaigns
-            postcode_campaign_count = filtered_df.groupby(['Postcode Slice'])['Media Format Name'].count()
+            postcode_campaign_count = filtered_df.groupby(['Postcode Slice'])['Campaign'].count()
+			postcode_format_count = filtered_df.groupby(['Postcode Slice'])['Media Format Name'].count()
         
             # Get the top 5 postcodes with the most campaign occurrences
-            top_postcodes = postcode_campaign_count.nlargest(10)
-            print(top_postcodes)
+            top_postcodes_campagins = postcode_campaign_count.nlargest(10)
+			top_postcodes_formats = postcode_format_count.nlargest(10)
+            print(top_postcodes_campagins,top_postcodes_formats)
         
             # Randomly pick one of the top 10 postcodes
             if len(top_postcodes) >= 1:
-                selected_postcode = top_postcodes.index.tolist()[0]
+				campaignindex = top_postcodes_campagins.index.tolist()
+				formatsindex = top_postcodes_formats.index.tolist()
+				shared = set(formstsindex) & set(campaignindex)
+				if len(shared) > 0:
+					selected_postcode = shared[0]
+				else:
+                	selected_postcode = campaignindex[0]
                 Pindex = filtered_df[filtered_df['Postcode Slice'] == selected_postcode].index.tolist()
                 selected_postcode = filtered_df.at[Pindex[0],'Postcode']
             else:
