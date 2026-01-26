@@ -118,7 +118,7 @@ def app():
             if len(top_postcodes_campaigns) >= 1:
                 campaignindex = top_postcodes_campaigns.index.tolist()
                 formatsindex = top_postcodes_formats.index.tolist()
-                shared = set(formstsindex) & set(campaignindex)
+                shared = set(formatsindex) & set(campaignindex)
                 if len(shared) > 0:
                     selected_postcode = shared[0]
                 else:
