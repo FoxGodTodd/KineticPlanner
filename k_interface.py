@@ -115,7 +115,7 @@ def app():
             print(top_postcodes_campagins,top_postcodes_formats)
         
             # Randomly pick one of the top 10 postcodes
-            if len(top_postcodes) >= 1:
+            if len(top_postcodes_campaigns) >= 1:
                 campaignindex = top_postcodes_campagins.index.tolist()
                 formatsindex = top_postcodes_formats.index.tolist()
                 shared = set(formstsindex) & set(campaignindex)
