@@ -99,7 +99,7 @@ def app():
                 print('All included')
                 filtered_df = dftemp
             
-            input_date = date_input.strftime('%Y-%m-%d')
+            input_date = date_input.strftime('%Y-%m-%d',dayfirst=True)
             filtered_df['Start'] = pd.to_datetime(filtered_df['Start'])
             filtered_df['Finish'] = pd.to_datetime(filtered_df['Finish'])
             filtered_df = filtered_df[(filtered_df['Start'] <= input_date)&(filtered_df['Finish'] >= input_date)]
