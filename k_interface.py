@@ -99,9 +99,9 @@ def app():
                 print('All included')
                 filtered_df = dftemp
             
-            input_date = date_input.strftime('%Y-%m-%d',dayfirst=True)
-            filtered_df['Start'] = pd.to_datetime(filtered_df['Start'])
-            filtered_df['Finish'] = pd.to_datetime(filtered_df['Finish'])
+            input_date = date_input.strftime('%Y-%m-%d')
+            filtered_df['Start'] = pd.to_datetime(filtered_df['Start'],errors='ignore')
+            filtered_df['Finish'] = pd.to_datetime(filtered_df['Finish'],errors='ignore')
             filtered_df = filtered_df[(filtered_df['Start'] <= input_date)&(filtered_df['Finish'] >= input_date)]
             filtered_df['Postcode Slice'] = filtered_df['Postcode'].str.split(' ').str[0]
         
