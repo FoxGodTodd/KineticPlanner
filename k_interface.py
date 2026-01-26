@@ -107,7 +107,7 @@ def app():
         
             # Count how many times each postcode appears in the selected campaigns
             postcode_campaign_count = filtered_df.groupby(['Postcode Slice'])['Campaign'].count()
-			postcode_format_count = filtered_df.groupby(['Postcode Slice'])['Media Format Name'].count()
+            postcode_format_count = filtered_df.groupby(['Postcode Slice'])['Media Format Name'].count()
         
             # Get the top 5 postcodes with the most campaign occurrences
             top_postcodes_campagins = postcode_campaign_count.nlargest(10)
