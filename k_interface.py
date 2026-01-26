@@ -112,7 +112,7 @@ def app():
             # Get the top 5 postcodes with the most campaign occurrences
             top_postcodes_campaigns = postcode_campaign_count.nlargest(10)
             top_postcodes_formats = postcode_format_count.nlargest(10)
-            print(top_postcodes_campagins,top_postcodes_formats)
+            print(top_postcodes_campaigns,top_postcodes_formats)
         
             # Randomly pick one of the top 10 postcodes
             if len(top_postcodes_campaigns) >= 1:
