@@ -135,7 +135,8 @@ def make_dataframe(df,shots_dict,choices,arniesites):
             selected_Df['Coordinates'] = merged_df['Coordinates'].to_list()
         
         # Export selected sites to a new Excel file
-        selected_Df=selected_Df[['Map','Brand','Format','Address','Coordinates','Postcode','File Name','Notes','Site Number','Media Owner','Panel Code','Booking IDs']]
+        selected_Df=selected_Df[['Map','Booking IDs','Brand','Postar ID','Format','Address','Coordinates','Postcode','File Name','Site Number','Media Owner','Panel Code']]
+        selected_Df.rename(columns={'Postar ID':'RouteFrame ID'},inplace=True)
         #selected_Df.to_excel('SelectedSites.xlsx', index=False)
         print(f"Selected sites have been saved to 'SelectedSites.xlsx'.")
     return(selected_Df)
