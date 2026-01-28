@@ -107,22 +107,25 @@ def app():
         
             # Count how many times each postcode appears in the selected campaigns
             postcode_campaign_count = filtered_df.groupby(['Postcode Slice'])['Campaign'].count()
-            postcode_format_count = filtered_df.groupby(['Postcode Slice'])['Media Format Name'].count()
-            print(postcode_campaign_count,postcode_format_count)
         
             # Get the top 5 postcodes with the most campaign occurrences
-            top_postcodes_campaigns = postcode_campaign_count.nlargest(10)
-            top_postcodes_formats = postcode_format_count.nlargest(10)
-            print(top_postcodes_campaigns,top_postcodes_formats)
+            top_postcodes = postcode_campaign_count.nlargest(10)
+            print(top_postcodes)
+            bestcnt = 0
+            for pocode in top_postcodes.index.tolist():
+                better = filtered_df[filtered_df['Postcode Slice']==pocode]['Media Format Name'].nunique()
+                better = better*(filtered_df[filtered_df['Postcode Slice']==pocode]['Environment'].nunique())
+                if better > bestcnt:
+                    best = pocode
+                    bestcnt = better
+                print(best,bestcnt,pocode,better)
         
-            # Randomly pick one of the top 10 postcodes
-            if len(top_postcodes_campaigns) >= 1:
-                campaignindex = top_postcodes_campaigns.index.tolist()
-                formatsindex = top_postcodes_formats.index.tolist()
-                shared = list(set(formatsindex) & set(campaignindex))
-                if len(shared) > 0:
-                    print(shared)
-                    selected_postcode = shared[0]
+            # Pick the postcode with the most formats
+            print(len(top_postcodes.index.tolist()))
+            if len(top_postcodes.index.tolist()) >= 1:
+                selected_postcode = best
+                Pindex = filtered_df[filtered_df['Postcode Slice'] == selected_postcode].index.tolist()
+                selected_postcode = filtered_df.at[Pindex[0],'Postcode']
                 else:
                     selected_postcode = campaignindex[0]
                 Pindex = filtered_df[filtered_df['Postcode Slice'] == selected_postcode].index.tolist()
